@@ -1,0 +1,592 @@
+================================================================================
+         SMART APPOINTMENT & QUEUE MANAGER - UI TESTING GUIDE
+================================================================================
+
+This document provides step-by-step instructions to test all features of the
+application through the user interface.
+
+Prerequisites:
+- Application running at http://localhost:3000
+- MongoDB Atlas connected (check terminal for connection success)
+- Valid .env.local file configured
+
+================================================================================
+                        1. LANDING PAGE TEST
+================================================================================
+
+URL: http://localhost:3000
+
+[ ] Page loads without errors
+[ ] Hero section displays with animated text
+[ ] "Get Started" button is visible and clickable
+[ ] "Login" button in header is visible
+[ ] Features section shows 6 feature cards
+[ ] Stats section displays animated counters
+[ ] Footer is visible at the bottom
+[ ] Page is responsive (resize browser to check mobile view)
+
+Expected: Modern dark theme with glassmorphism effects and smooth animations
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        2. REGISTRATION TEST
+================================================================================
+
+URL: http://localhost:3000/register
+
+TEST 2.1 - Form Validation (Empty Fields)
+[ ] Click "Create Account" without filling anything
+[ ] Should show validation errors for all required fields
+
+TEST 2.2 - Email Validation
+[ ] Enter invalid email: "notanemail"
+[ ] Should show "Invalid email address" error
+
+TEST 2.3 - Password Validation
+[ ] Enter password less than 6 characters: "12345"
+[ ] Should show password length error
+
+TEST 2.4 - Password Confirmation
+[ ] Enter password: "password123"
+[ ] Enter confirm password: "password456"
+[ ] Should show "Passwords do not match" error
+
+TEST 2.5 - Successful Registration
+[ ] Enter Name: "Test User"
+[ ] Enter Email: "testuser@example.com"
+[ ] Enter Password: "TestPassword123"
+[ ] Enter Confirm Password: "TestPassword123"
+[ ] Click "Create Account"
+[ ] Should redirect to login page with success message
+
+TEST 2.6 - Duplicate Email
+[ ] Try registering again with same email
+[ ] Should show "User already exists" error
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        3. LOGIN TEST
+================================================================================
+
+URL: http://localhost:3000/login
+
+TEST 3.1 - Form Validation
+[ ] Click "Sign In" without filling anything
+[ ] Should show validation errors
+
+TEST 3.2 - Wrong Credentials
+[ ] Enter Email: "testuser@example.com"
+[ ] Enter Password: "wrongpassword"
+[ ] Click "Sign In"
+[ ] Should show "Invalid credentials" error
+
+TEST 3.3 - Successful Login
+[ ] Enter Email: "testuser@example.com"
+[ ] Enter Password: "TestPassword123"
+[ ] Click "Sign In"
+[ ] Should redirect to dashboard
+
+TEST 3.4 - Link to Register
+[ ] Click "Sign up" link at bottom
+[ ] Should navigate to registration page
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        4. DASHBOARD TEST
+================================================================================
+
+URL: http://localhost:3000/dashboard
+
+[ ] Dashboard loads after login
+[ ] Header shows user name and logout button
+[ ] Sidebar shows all navigation items:
+    - Dashboard
+    - Staff
+    - Services
+    - Appointments
+    - Queue
+    - Activity
+[ ] Stats cards display (may show 0 for new account):
+    - Today's Appointments
+    - Pending Queue
+    - Active Staff
+    - Total Services
+[ ] Cards have hover animation effects
+[ ] Sidebar collapses on mobile view
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        5. STAFF MANAGEMENT TEST
+================================================================================
+
+URL: http://localhost:3000/dashboard/staff
+
+TEST 5.1 - Empty State
+[ ] If no staff exists, shows "No staff members found" message
+[ ] "Add Staff" button is visible
+
+TEST 5.2 - Create Staff Member
+[ ] Click "Add Staff" button
+[ ] Modal opens with form
+[ ] Fill in:
+    - Name: "John Smith"
+    - Email: "john.smith@clinic.com"
+    - Phone: "+1234567890"
+    - Specialization: "General Consultation"
+    - Daily Capacity: 10
+    - Status: Available
+[ ] Click "Create Staff"
+[ ] Staff card should appear in the list
+[ ] Success toast notification appears
+
+TEST 5.3 - Create Another Staff
+[ ] Add another staff member:
+    - Name: "Jane Doe"
+    - Email: "jane.doe@clinic.com"
+    - Phone: "+0987654321"
+    - Specialization: "Dental Care"
+    - Daily Capacity: 8
+    - Status: Available
+[ ] Should now show 2 staff cards
+
+TEST 5.4 - Edit Staff
+[ ] Click edit (pencil) icon on John Smith's card
+[ ] Modal opens with pre-filled data
+[ ] Change Daily Capacity to 12
+[ ] Click "Update Staff"
+[ ] Card should show updated capacity
+[ ] Success toast appears
+
+TEST 5.5 - Change Staff Status
+[ ] Click edit on Jane Doe's card
+[ ] Change Status to "On Leave"
+[ ] Click "Update Staff"
+[ ] Card should show "On Leave" badge
+
+TEST 5.6 - Delete Staff
+[ ] Click delete (trash) icon on a staff card
+[ ] Confirmation dialog appears
+[ ] Click "Delete"
+[ ] Staff should be removed from list
+[ ] Success toast appears
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        6. SERVICES MANAGEMENT TEST
+================================================================================
+
+URL: http://localhost:3000/dashboard/services
+
+TEST 6.1 - Empty State
+[ ] Shows "No services found" if empty
+[ ] "Add Service" button visible
+
+TEST 6.2 - Create Service
+[ ] Click "Add Service"
+[ ] Fill in:
+    - Name: "General Checkup"
+    - Description: "Routine health examination"
+    - Duration: 30 (minutes)
+    - Status: Active
+[ ] Click "Create Service"
+[ ] Service card appears
+[ ] Success toast shows
+
+TEST 6.3 - Create More Services
+[ ] Add "Dental Cleaning" - Duration: 45 mins - Active
+[ ] Add "X-Ray Imaging" - Duration: 15 mins - Active
+[ ] Add "Physical Therapy" - Duration: 60 mins - Inactive
+[ ] Should show 4 service cards
+
+TEST 6.4 - Verify Status Badges
+[ ] Active services show green "Active" badge
+[ ] Inactive services show gray "Inactive" badge
+
+TEST 6.5 - Edit Service
+[ ] Click edit on "General Checkup"
+[ ] Change duration to 45 minutes
+[ ] Click "Update Service"
+[ ] Card shows updated duration
+
+TEST 6.6 - Deactivate Service
+[ ] Edit "X-Ray Imaging"
+[ ] Change Status to "Inactive"
+[ ] Save changes
+[ ] Badge should update to "Inactive"
+
+TEST 6.7 - Delete Service
+[ ] Delete "Physical Therapy" service
+[ ] Confirm deletion
+[ ] Service removed from list
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        7. APPOINTMENTS TEST
+================================================================================
+
+URL: http://localhost:3000/dashboard/appointments
+
+TEST 7.1 - Empty State
+[ ] Shows "No appointments found" message
+[ ] "New Appointment" button visible
+
+TEST 7.2 - Create Appointment
+[ ] Click "New Appointment"
+[ ] Fill in:
+    - Customer Name: "Alice Johnson"
+    - Customer Phone: "+1122334455"
+    - Customer Email: "alice@email.com"
+    - Select Service: "General Checkup"
+    - Select Staff: "John Smith" (or available staff)
+    - Date: Tomorrow's date
+    - Time: 10:00 AM
+    - Notes: "First visit"
+[ ] Click "Create Appointment"
+[ ] Appointment appears in table
+[ ] Status shows "Pending"
+
+TEST 7.3 - Create More Appointments
+[ ] Create appointment for "Bob Williams" - Tomorrow 11:00 AM
+[ ] Create appointment for "Carol Davis" - Tomorrow 2:00 PM
+[ ] All should appear in table
+
+TEST 7.4 - Status Badges
+[ ] Pending appointments show yellow badge
+[ ] Verify status column displays correctly
+
+TEST 7.5 - Filter by Status
+[ ] Click status filter dropdown
+[ ] Select "Pending"
+[ ] Only pending appointments should show
+[ ] Select "All" to reset
+
+TEST 7.6 - Filter by Date
+[ ] Use date picker to filter
+[ ] Select today's date (should show no results if all are tomorrow)
+[ ] Select tomorrow's date (should show appointments)
+
+TEST 7.7 - Update Appointment Status
+[ ] Click on an appointment row or edit button
+[ ] Change status to "Confirmed"
+[ ] Save changes
+[ ] Badge should change to green "Confirmed"
+
+TEST 7.8 - Edit Appointment Details
+[ ] Edit an appointment
+[ ] Change the time
+[ ] Save changes
+[ ] Verify time updated in table
+
+TEST 7.9 - Cancel Appointment
+[ ] Edit an appointment
+[ ] Change status to "Cancelled"
+[ ] Save changes
+[ ] Badge shows "Cancelled" in red/gray
+
+TEST 7.10 - Complete Appointment
+[ ] Edit a confirmed appointment
+[ ] Change status to "Completed"
+[ ] Save
+[ ] Badge shows "Completed" in blue/green
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        8. QUEUE MANAGEMENT TEST
+================================================================================
+
+URL: http://localhost:3000/dashboard/queue
+
+TEST 8.1 - Queue Display
+[ ] Page loads without errors
+[ ] Shows queue entries or "No appointments in queue" message
+[ ] "Auto Assign" button visible
+
+TEST 8.2 - View Queue Information
+[ ] Each queue entry shows:
+    - Position number
+    - Customer name
+    - Service name
+    - Requested time
+    - Duration
+[ ] Available staff list shows on the right/below
+
+TEST 8.3 - Manual Assignment
+[ ] If queue has entries:
+    - Select a staff member
+    - Click "Assign" button
+    - Should show success message
+    - Queue entry removed from list
+
+TEST 8.4 - Auto Assignment
+[ ] If queue has entries:
+    - Click "Auto Assign" button
+    - System assigns to first available staff
+    - Success message shows staff name
+
+TEST 8.5 - No Available Staff
+[ ] If all staff are on leave or at capacity:
+    - Assignment should show error message
+    - "No available staff members" or similar
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        9. ACTIVITY LOG TEST
+================================================================================
+
+URL: http://localhost:3000/dashboard/activity
+
+TEST 9.1 - Activity Display
+[ ] Page loads with activity entries
+[ ] Recent activities from all operations should show:
+    - Staff created/updated/deleted
+    - Services created/updated/deleted
+    - Appointments created/updated/cancelled
+    - Queue assignments
+
+TEST 9.2 - Activity Details
+[ ] Each activity shows:
+    - Action type (badge)
+    - Description text
+    - Timestamp
+    - Relative time (e.g., "2 minutes ago")
+
+TEST 9.3 - Grouped by Date
+[ ] Activities grouped under date headers
+[ ] Today's activities under "Today"
+[ ] Yesterday's under "Yesterday"
+[ ] Older ones under actual date
+
+TEST 9.4 - Filter by Action Type
+[ ] Use action filter dropdown
+[ ] Filter by "appointment" actions
+[ ] Only appointment-related entries show
+
+TEST 9.5 - Pagination
+[ ] If more than 20 activities:
+    - "Load More" or pagination appears
+    - Click to load more entries
+    - More activities appear
+
+TEST 9.6 - Empty State
+[ ] If filtering results in no matches:
+    - Shows "No activity found" message
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        10. NAVIGATION & UI TEST
+================================================================================
+
+TEST 10.1 - Sidebar Navigation
+[ ] Click each sidebar item:
+    - Dashboard → /dashboard
+    - Staff → /dashboard/staff
+    - Services → /dashboard/services
+    - Appointments → /dashboard/appointments
+    - Queue → /dashboard/queue
+    - Activity → /dashboard/activity
+[ ] Active item highlighted
+[ ] Page transitions are smooth
+
+TEST 10.2 - Header Functionality
+[ ] User name displayed in header
+[ ] Logout button visible
+[ ] Click logout → redirects to login page
+[ ] Cannot access dashboard after logout
+
+TEST 10.3 - Protected Routes
+[ ] After logout, try accessing /dashboard directly
+[ ] Should redirect to login page
+[ ] Login required to access any dashboard route
+
+TEST 10.4 - Responsive Design
+[ ] Resize browser to mobile width (< 768px)
+[ ] Sidebar collapses to hamburger menu
+[ ] Tables become scrollable or stack
+[ ] Forms remain usable
+[ ] Buttons stay clickable
+
+TEST 10.5 - Dark Theme
+[ ] All pages have consistent dark theme
+[ ] Text is readable (good contrast)
+[ ] No white/light backgrounds breaking theme
+[ ] Glassmorphism effects on cards
+
+TEST 10.6 - Loading States
+[ ] When data is loading:
+    - Loading spinner appears
+    - Page doesn't flash empty state
+[ ] When operations complete:
+    - Data updates immediately
+    - No page refresh needed
+
+TEST 10.7 - Error Handling
+[ ] Disconnect internet and try an operation
+[ ] Error message should appear
+[ ] UI should not crash
+[ ] Reconnect and retry works
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        11. FORM VALIDATION SUMMARY
+================================================================================
+
+Test that these validations work across all forms:
+
+STAFF FORM:
+[ ] Name: Required, 2-100 characters
+[ ] Email: Required, valid email format
+[ ] Phone: Optional
+[ ] Specialization: Required
+[ ] Daily Capacity: Required, 1-50 range
+
+SERVICE FORM:
+[ ] Name: Required, 2-100 characters
+[ ] Description: Optional, max 500 characters
+[ ] Duration: Required, 5-480 minutes
+[ ] Status: Required (Active/Inactive)
+
+APPOINTMENT FORM:
+[ ] Customer Name: Required
+[ ] Customer Phone: Optional
+[ ] Customer Email: Optional, valid email if provided
+[ ] Service: Required (dropdown)
+[ ] Staff: Optional (dropdown)
+[ ] Date: Required
+[ ] Time: Required
+[ ] Notes: Optional, max 500 characters
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        12. DATA PERSISTENCE TEST
+================================================================================
+
+TEST 12.1 - Refresh Persistence
+[ ] Create some data (staff, services, appointments)
+[ ] Refresh the browser (F5 or Ctrl+R)
+[ ] All data should still be there
+
+TEST 12.2 - Session Persistence
+[ ] Login and use the app
+[ ] Close browser completely
+[ ] Reopen browser and go to /dashboard
+[ ] Should still be logged in (for up to 30 days)
+
+TEST 12.3 - Multi-Tab Sync
+[ ] Open app in two browser tabs
+[ ] Create a staff member in tab 1
+[ ] Refresh tab 2
+[ ] New staff should appear in tab 2
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        13. EDGE CASES & ERROR HANDLING
+================================================================================
+
+TEST 13.1 - Empty Search Results
+[ ] Filter appointments by a date with no appointments
+[ ] Should show "No appointments found" message
+
+TEST 13.2 - Rapid Actions
+[ ] Click "Create" button multiple times quickly
+[ ] Should only create one entry (button disabled during request)
+
+TEST 13.3 - Long Text
+[ ] Create a service with very long name (100 chars)
+[ ] Text should truncate or wrap properly
+[ ] No layout breaking
+
+TEST 13.4 - Special Characters
+[ ] Create staff with name: "José García-López"
+[ ] Should save and display correctly
+[ ] No encoding issues
+
+TEST 13.5 - Past Date Appointments
+[ ] Try creating appointment for yesterday
+[ ] Should either work or show appropriate message
+
+TEST 13.6 - Overlapping Appointments
+[ ] Create two appointments for same staff, same time
+[ ] Second should fail with conflict error
+[ ] Error message explains the conflict
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        TEST COMPLETION CHECKLIST
+================================================================================
+
+After completing all tests, verify:
+
+[ ] All CRUD operations work (Create, Read, Update, Delete)
+[ ] Authentication flow complete (Register, Login, Logout)
+[ ] Form validations prevent bad data
+[ ] Error messages are clear and helpful
+[ ] Success notifications appear for operations
+[ ] Data persists after refresh
+[ ] UI is responsive on all screen sizes
+[ ] No console errors in browser dev tools
+[ ] All navigation links work correctly
+[ ] Protected routes require authentication
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        TROUBLESHOOTING
+================================================================================
+
+If you encounter issues:
+
+1. CHECK TERMINAL
+   - Look for error messages in the terminal running `npm run dev`
+   - MongoDB connection errors will appear here
+
+2. CHECK BROWSER CONSOLE
+   - Open DevTools (F12 or Ctrl+Shift+I)
+   - Look at Console tab for JavaScript errors
+   - Look at Network tab for failed API calls
+
+3. CHECK .ENV.LOCAL
+   - Ensure MONGODB_URI is correct
+   - Ensure NEXTAUTH_SECRET is set
+   - Ensure NEXTAUTH_URL matches your localhost
+
+4. RESTART SERVER
+   - Stop server (Ctrl+C in terminal)
+   - Run `npm run dev` again
+
+5. CLEAR BROWSER DATA
+   - Clear cookies for localhost
+   - Clear localStorage
+   - Try incognito/private window
+
+--------------------------------------------------------------------------------
+
+================================================================================
+                        NOTES
+================================================================================
+
+Date Tested: _______________
+Tested By: _______________
+Browser Used: _______________
+Any Issues Found:
+
+_______________________________________________________________
+_______________________________________________________________
+_______________________________________________________________
+_______________________________________________________________
+
+================================================================================
+                        END OF TESTING GUIDE
+================================================================================

@@ -1,0 +1,698 @@
+================================================================================
+         SMART APPOINTMENT & QUEUE MANAGER - PROJECT PLAN
+================================================================================
+
+Project: Smart Appointment & Queue Manager
+Created: January 24, 2026
+Tech Stack: Next.js 15, TypeScript, Tailwind CSS 4, Prisma, PostgreSQL
+
+================================================================================
+                           PROJECT OVERVIEW
+================================================================================
+
+A full-stack web application to manage service appointments, staff availability,
+and customer queues with real-time conflict detection and auto-assignment.
+
+Core Features:
+- User authentication with demo login
+- Staff & service management
+- Appointment scheduling with conflict detection
+- Waiting queue with position tracking
+- Real-time dashboard analytics
+- Activity logging
+
+================================================================================
+                           TECHNOLOGY STACK
+================================================================================
+
+FRONTEND:
+├── Next.js 15 (App Router)
+├── TypeScript
+├── Tailwind CSS 4
+├── shadcn/ui (Component Library)
+├── Framer Motion (Animations)
+├── React Hook Form + Zod (Forms & Validation)
+├── TanStack Query (Server State)
+└── date-fns (Date Utilities)
+
+BACKEND:
+├── Next.js API Routes & Server Actions
+├── Prisma ORM
+├── NextAuth.js v5 (Auth.js)
+├── Zod (Server Validation)
+└── Server-Sent Events (Real-time)
+
+DATABASE:
+├── PostgreSQL (Neon or Supabase)
+└── Redis/Upstash (Rate Limiting - Optional)
+
+DEPLOYMENT:
+├── Vercel (Hosting)
+├── Neon/Supabase (Database)
+└── GitHub (Version Control)
+
+================================================================================
+                     COLOR PALETTE (DARK GLASSMORPHISM)
+================================================================================
+
+BACKGROUNDS:
+┌─────────────────────┬───────────────────────────────┐
+│ Background Dark     │ #0A0A0F                       │
+│ Surface             │ #12121A                       │
+│ Elevated Surface    │ #1A1A24                       │
+│ Glass Background    │ rgba(255, 255, 255, 0.08)     │
+│ Glass Border        │ rgba(255, 255, 255, 0.12)     │
+└─────────────────────┴───────────────────────────────┘
+
+ACCENT COLORS:
+┌─────────────────────┬───────────────────────────────┐
+│ Primary (Indigo)    │ #6366F1                       │
+│ Primary Hover       │ #818CF8                       │
+│ Secondary (Cyan)    │ #22D3EE                       │
+│ Success (Emerald)   │ #10B981                       │
+│ Warning (Amber)     │ #F59E0B                       │
+│ Error (Red)         │ #EF4444                       │
+│ Info (Blue)         │ #3B82F6                       │
+└─────────────────────┴───────────────────────────────┘
+
+TEXT COLORS:
+┌─────────────────────┬───────────────────────────────┐
+│ Text Primary        │ #F8FAFC                       │
+│ Text Secondary      │ #94A3B8                       │
+│ Text Muted          │ #64748B                       │
+└─────────────────────┴───────────────────────────────┘
+
+GLASSMORPHISM CSS:
+.glass-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+================================================================================
+                         PAGES & ROUTING STRUCTURE
+================================================================================
+
+PUBLIC ROUTES:
+┌────────────────────┬───────────┬─────────────────────────────────────────────┐
+│ Route              │ Rendering │ Description                                 │
+├────────────────────┼───────────┼─────────────────────────────────────────────┤
+│ /                  │ SSG       │ Landing page with features & CTA            │
+│ /login             │ SSR       │ Login form + demo user button               │
+│ /register          │ SSR       │ Registration form with validation           │
+└────────────────────┴───────────┴─────────────────────────────────────────────┘
+
+PROTECTED ROUTES (Dashboard):
+┌────────────────────────────────┬───────────┬─────────────────────────────────┐
+│ Route                          │ Rendering │ Description                     │
+├────────────────────────────────┼───────────┼─────────────────────────────────┤
+│ /dashboard                     │ CSR       │ Main dashboard with stats       │
+│ /dashboard/staff               │ CSR       │ Staff management (CRUD)         │
+│ /dashboard/services            │ CSR       │ Service definitions             │
+│ /dashboard/appointments        │ SSR+CSR   │ Appointment calendar & list     │
+│ /dashboard/queue               │ CSR+SSE   │ Real-time waiting queue         │
+│ /dashboard/activity            │ CSR       │ Activity log (latest 10)        │
+│ /dashboard/settings            │ CSR       │ User profile & preferences      │
+└────────────────────────────────┴───────────┴─────────────────────────────────┘
+
+RENDERING STRATEGY:
+- SSG (Static Site Generation): Landing page - cached, SEO optimized
+- SSR (Server-Side Rendering): Auth pages - check session server-side
+- CSR (Client-Side Rendering): Dashboard pages - highly interactive
+- SSE (Server-Sent Events): Queue page - real-time position updates
+
+================================================================================
+                            DATABASE SCHEMA
+================================================================================
+
+USER MODEL:
+┌─────────────────┬───────────────────┬─────────────────────────────────────────┐
+│ Field           │ Type              │ Description                             │
+├─────────────────┼───────────────────┼─────────────────────────────────────────┤
+│ id              │ String (CUID)     │ Primary key                             │
+│ email           │ String (Unique)   │ User email for login                    │
+│ password        │ String            │ Hashed password                         │
+│ name            │ String            │ Display name                            │
+│ role            │ Enum              │ ADMIN / USER                            │
+│ createdAt       │ DateTime          │ Account creation timestamp              │
+│ updatedAt       │ DateTime          │ Last update timestamp                   │
+└─────────────────┴───────────────────┴─────────────────────────────────────────┘
+
+STAFF MODEL:
+┌─────────────────┬───────────────────┬─────────────────────────────────────────┐
+│ Field           │ Type              │ Description                             │
+├─────────────────┼───────────────────┼─────────────────────────────────────────┤
+│ id              │ String (CUID)     │ Primary key                             │
+│ userId          │ String (FK)       │ Owner/creator reference                 │
+│ name            │ String            │ Staff member name                       │
+│ serviceType     │ String            │ Doctor, Consultant, Support Agent       │
+│ dailyCapacity   │ Int (Default: 5)  │ Max appointments per day                │
+│ status          │ Enum              │ AVAILABLE / ON_LEAVE                    │
+│ createdAt       │ DateTime          │ Creation timestamp                      │
+└─────────────────┴───────────────────┴─────────────────────────────────────────┘
+
+SERVICE MODEL:
+┌─────────────────┬───────────────────┬─────────────────────────────────────────┐
+│ Field           │ Type              │ Description                             │
+├─────────────────┼───────────────────┼─────────────────────────────────────────┤
+│ id              │ String (CUID)     │ Primary key                             │
+│ userId          │ String (FK)       │ Owner/creator reference                 │
+│ name            │ String            │ Service name (Consultation, Check-up)   │
+│ duration        │ Int               │ Duration in minutes (15/30/60)          │
+│ requiredStaff   │ String            │ Required staff type                     │
+│ isActive        │ Boolean           │ Service availability                    │
+│ createdAt       │ DateTime          │ Creation timestamp                      │
+└─────────────────┴───────────────────┴─────────────────────────────────────────┘
+
+APPOINTMENT MODEL:
+┌─────────────────┬───────────────────┬─────────────────────────────────────────┐
+│ Field           │ Type              │ Description                             │
+├─────────────────┼───────────────────┼─────────────────────────────────────────┤
+│ id              │ String (CUID)     │ Primary key                             │
+│ userId          │ String (FK)       │ Owner/creator reference                 │
+│ staffId         │ String? (FK)      │ Assigned staff (null = in queue)        │
+│ serviceId       │ String (FK)       │ Selected service reference              │
+│ customerName    │ String            │ Customer's name                         │
+│ startTime       │ DateTime          │ Appointment start time                  │
+│ endTime         │ DateTime          │ Appointment end time                    │
+│ status          │ Enum              │ SCHEDULED/COMPLETED/CANCELLED/NO_SHOW   │
+│ slotKey         │ String (Unique)   │ "staffId_date_time" for conflict check  │
+│ createdAt       │ DateTime          │ Creation timestamp                      │
+│ updatedAt       │ DateTime          │ Last update timestamp                   │
+└─────────────────┴───────────────────┴─────────────────────────────────────────┘
+
+WAITING_QUEUE MODEL:
+┌─────────────────┬───────────────────┬─────────────────────────────────────────┐
+│ Field           │ Type              │ Description                             │
+├─────────────────┼───────────────────┼─────────────────────────────────────────┤
+│ id              │ String (CUID)     │ Primary key                             │
+│ appointmentId   │ String (FK)       │ Linked appointment                      │
+│ position        │ Int               │ Queue position (1st, 2nd, 3rd...)       │
+│ status          │ Enum              │ WAITING / ASSIGNED                      │
+│ createdAt       │ DateTime          │ Queue entry timestamp                   │
+└─────────────────┴───────────────────┴─────────────────────────────────────────┘
+
+ACTIVITY_LOG MODEL:
+┌─────────────────┬───────────────────┬─────────────────────────────────────────┐
+│ Field           │ Type              │ Description                             │
+├─────────────────┼───────────────────┼─────────────────────────────────────────┤
+│ id              │ String (CUID)     │ Primary key                             │
+│ userId          │ String (FK)       │ User who performed action               │
+│ action          │ String            │ Action type (ASSIGNED, CANCELLED, etc)  │
+│ details         │ String            │ Human-readable description              │
+│ metadata        │ JSON?             │ Additional data                         │
+│ createdAt       │ DateTime          │ Action timestamp                        │
+└─────────────────┴───────────────────┴─────────────────────────────────────────┘
+
+UNIQUE CONSTRAINT FOR CONFLICT PREVENTION:
+- slotKey = "{staffId}_{date}_{startTime}"
+- Ensures no two appointments can occupy the same slot at DB level
+
+================================================================================
+                         FEATURE SPECIFICATIONS
+================================================================================
+
+1. AUTHENTICATION
+--------------------------------------------------------------------------------
+   - Email + Password registration
+   - Login with validation
+   - Demo user button: "Login as Demo User"
+   - Demo credentials seeded: demo@example.com / demo123
+   - Session management via NextAuth.js v5
+   - Protected route middleware
+   - Redirect to /dashboard after successful login
+
+2. STAFF MANAGEMENT
+--------------------------------------------------------------------------------
+   - Create staff member (Name, Service Type, Daily Capacity)
+   - Edit staff details
+   - Delete staff member
+   - Toggle availability status (Available / On Leave)
+   - View staff list with current day's appointment count
+   - Display format: "Farhan (3/5 appointments today)"
+   - Filter by service type
+   - Search by name
+
+3. SERVICE MANAGEMENT
+--------------------------------------------------------------------------------
+   - Create service (Name, Duration, Required Staff Type)
+   - Duration options: 15, 30, 60 minutes
+   - Edit service details
+   - Activate/Deactivate services
+   - Delete service
+   - List services with status badges
+
+4. APPOINTMENT MANAGEMENT
+--------------------------------------------------------------------------------
+   CREATE APPOINTMENT:
+   - Select service (dropdown)
+   - Enter customer name
+   - Select date & time
+   - Select staff (with capacity display)
+   - Staff dropdown shows: "Farhan (3/5 appointments today)"
+   
+   CAPACITY WARNING:
+   - If staff at max capacity: 
+     "⚠️ Farhan already has 5 appointments today"
+   - Block selection if exceeded
+   
+   NO STAFF AVAILABLE:
+   - Appointment goes to Waiting Queue
+   - Show message: "No staff available. Added to waiting queue."
+   
+   CONFLICT DETECTION:
+   - Check for time overlap with same staff
+   - Show error: "This staff member already has an appointment at this time."
+   - Offer options: Pick another staff / Change time
+   
+   VIEW APPOINTMENTS:
+   - List view with filters (date, staff, status)
+   - Calendar view (weekly/daily)
+   - Status badges: Scheduled (blue), Completed (green), 
+                    Cancelled (gray), No-Show (red)
+   
+   EDIT APPOINTMENT:
+   - Update customer name, time, staff, service
+   - Re-validate conflicts on edit
+   
+   CANCEL APPOINTMENT:
+   - Soft delete (mark as CANCELLED)
+   - Log activity
+
+5. WAITING QUEUE MANAGEMENT
+--------------------------------------------------------------------------------
+   QUEUE DISPLAY:
+   - Ordered by appointment time (earliest first)
+   - Show position: 1st, 2nd, 3rd...
+   - Show customer name, service, requested time
+   - Real-time updates via SSE
+   
+   ASSIGN FROM QUEUE:
+   - Button: "Assign From Queue"
+   - Auto-select earliest eligible appointment
+   - Check staff availability and capacity
+   - Assign to available staff
+   - Remove from queue
+   - Log activity: "Appointment for 'John' assigned to Riya"
+   
+   MANUAL ASSIGNMENT:
+   - Select specific queue entry
+   - Choose available staff
+   - Assign and log
+
+6. CONFLICT DETECTION ALGORITHM
+--------------------------------------------------------------------------------
+   VALIDATION STEPS:
+   1. Check time overlap with existing appointments for selected staff
+   2. Query: startTime < newEnd AND endTime > newStart
+   3. If overlap found → reject with message
+   4. Use database transaction with serializable isolation
+   5. Unique slotKey constraint as final safety net
+   
+   RACE CONDITION PREVENTION:
+   - Database-level unique constraint on slotKey
+   - Transaction isolation level: Serializable
+   - Optimistic locking pattern
+
+7. DASHBOARD
+--------------------------------------------------------------------------------
+   STATS CARDS:
+   - Total Appointments Today (count)
+   - Completed (count + percentage)
+   - Pending (count)
+   - Waiting Queue Count
+   
+   STAFF LOAD SUMMARY:
+   - Visual progress bars for each staff
+   - Color coding: Green (OK) / Yellow (Warning) / Red (Full)
+   - Example display:
+     Riya — 4/5 [████████░░] OK
+     Farhan — 5/5 [██████████] FULL
+   
+   QUICK ACTIONS:
+   - Create Appointment button
+   - View Queue button
+   - Assign From Queue button
+   
+   TODAY'S SCHEDULE:
+   - Timeline view of upcoming appointments
+   - Show customer name, service, staff, time
+
+8. ACTIVITY LOG
+--------------------------------------------------------------------------------
+   TRACKED ACTIONS:
+   - Queue → Staff assignments
+   - Appointment status changes
+   - Staff availability changes
+   - Appointment cancellations
+   
+   DISPLAY:
+   - Show latest 5-10 logs
+   - Timestamp format: "11:45 AM"
+   - Human-readable messages:
+     "11:45 AM — Appointment for 'John Doe' auto-assigned to Riya"
+     "12:10 PM — Appointment moved from queue to Farhan"
+   
+   LOAD MORE:
+   - Infinite scroll or "Load More" button
+   - Paginated API
+
+================================================================================
+                         UI COMPONENT LIBRARY
+================================================================================
+
+LAYOUT COMPONENTS:
+├── MainLayout        - Sidebar + Header + Content wrapper
+├── Sidebar           - Collapsible navigation
+├── Header            - User menu, notifications
+└── PageContainer     - Consistent page padding
+
+GLASS COMPONENTS:
+├── GlassCard         - Glassmorphic container
+├── GlassModal        - Modal with glass effect
+├── GlassDropdown     - Dropdown menu with blur
+└── GlassInput        - Input with glass background
+
+FORM COMPONENTS:
+├── Input             - Text input with validation states
+├── Select            - Dropdown select
+├── DatePicker        - Date selection
+├── TimePicker        - Time selection
+├── Textarea          - Multi-line input
+├── Checkbox          - Checkbox with label
+└── RadioGroup        - Radio button group
+
+DATA DISPLAY:
+├── DataTable         - Sortable, filterable table
+├── StatCard          - Dashboard stat display
+├── Badge             - Status badges
+├── Avatar            - User/staff avatar
+├── ProgressBar       - Capacity visualization
+└── EmptyState        - No data illustration
+
+FEEDBACK:
+├── Button            - Primary, Secondary, Ghost, Danger
+├── LoadingSpinner    - Loading state
+├── Skeleton          - Content placeholder
+├── Toast             - Notification toasts
+├── Alert             - Inline alerts
+└── ConfirmDialog     - Confirmation modal
+
+SCHEDULING:
+├── AppointmentCard   - Single appointment display
+├── Calendar          - Weekly/daily calendar view
+├── TimeSlotPicker    - Available time slots
+├── QueueCard         - Queue position card
+└── StaffLoadBar      - Staff capacity display
+
+================================================================================
+                         API ENDPOINTS / SERVER ACTIONS
+================================================================================
+
+AUTHENTICATION:
+POST   /api/auth/register         - User registration
+POST   /api/auth/[...nextauth]    - NextAuth.js handlers
+
+STAFF (Server Actions):
+createStaff(data)                 - Create staff member
+updateStaff(id, data)             - Update staff details
+deleteStaff(id)                   - Delete staff member
+toggleStaffStatus(id)             - Toggle availability
+getStaffList()                    - Get all staff with today's count
+getStaffById(id)                  - Get single staff
+
+SERVICES (Server Actions):
+createService(data)               - Create service
+updateService(id, data)           - Update service
+deleteService(id)                 - Delete service
+toggleServiceStatus(id)           - Activate/deactivate
+getServicesList()                 - Get all services
+
+APPOINTMENTS (Server Actions):
+createAppointment(data)           - Create with conflict check
+updateAppointment(id, data)       - Update with re-validation
+cancelAppointment(id)             - Cancel appointment
+updateAppointmentStatus(id, s)    - Change status
+getAppointments(filters)          - Get filtered list
+getAppointmentsByDate(date)       - Get by date
+getAppointmentsByStaff(staffId)   - Get by staff
+
+QUEUE (Server Actions):
+getWaitingQueue()                 - Get queue list
+assignFromQueue(queueId, staffId) - Assign to staff
+autoAssignNext()                  - Auto-assign earliest
+
+REAL-TIME:
+GET    /api/queue/stream          - SSE endpoint for queue updates
+
+DASHBOARD:
+getDashboardStats()               - Today's statistics
+getStaffLoadSummary()             - Staff capacity overview
+
+ACTIVITY:
+getActivityLogs(limit, offset)    - Paginated activity logs
+
+================================================================================
+                         VALIDATION RULES (ZOD SCHEMAS)
+================================================================================
+
+STAFF VALIDATION:
+- name: string, min 2 chars, max 100 chars
+- serviceType: string, min 2 chars
+- dailyCapacity: number, min 1, max 50
+
+SERVICE VALIDATION:
+- name: string, min 2 chars, max 100 chars
+- duration: enum [15, 30, 60]
+- requiredStaffType: string
+
+APPOINTMENT VALIDATION:
+- customerName: string, min 2 chars, max 100 chars
+- serviceId: valid service ID
+- staffId: valid staff ID (optional, null for queue)
+- startTime: future datetime
+- Server-side conflict detection (time overlap)
+- Server-side capacity validation
+
+USER VALIDATION:
+- email: valid email format
+- password: min 6 chars, max 100 chars
+- name: string, min 2 chars
+
+================================================================================
+                         SEO OPTIMIZATION
+================================================================================
+
+LANDING PAGE (/):
+- Title: "Smart Appointment & Queue Manager | Efficient Scheduling"
+- Meta description: "Manage appointments, staff, and queues..."
+- Open Graph tags for social sharing
+- Structured data (JSON-LD) for rich snippets
+
+LOGIN/REGISTER:
+- noindex meta tag (private pages)
+- Canonical URL
+
+DASHBOARD PAGES:
+- noindex (protected, user-specific)
+- No SEO requirements
+
+SITEMAP & ROBOTS:
+- Auto-generated sitemap.xml
+- robots.txt blocking /dashboard/*
+
+================================================================================
+                         PROJECT FOLDER STRUCTURE
+================================================================================
+
+appointment-queue-manager/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   └── register/
+│   │       └── page.tsx
+│   ├── (dashboard)/
+│   │   └── dashboard/
+│   │       ├── page.tsx              # Main dashboard
+│   │       ├── staff/
+│   │       │   └── page.tsx
+│   │       ├── services/
+│   │       │   └── page.tsx
+│   │       ├── appointments/
+│   │       │   └── page.tsx
+│   │       ├── queue/
+│   │       │   └── page.tsx
+│   │       ├── activity/
+│   │       │   └── page.tsx
+│   │       └── settings/
+│   │           └── page.tsx
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── [...nextauth]/
+│   │   │       └── route.ts
+│   │   └── queue/
+│   │       └── stream/
+│   │           └── route.ts          # SSE endpoint
+│   ├── layout.tsx
+│   ├── page.tsx                      # Landing page
+│   ├── globals.css
+│   ├── sitemap.ts
+│   └── robots.ts
+├── components/
+│   ├── ui/                           # shadcn/ui components
+│   ├── layout/
+│   │   ├── MainLayout.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── Header.tsx
+│   ├── forms/
+│   │   ├── StaffForm.tsx
+│   │   ├── ServiceForm.tsx
+│   │   └── AppointmentForm.tsx
+│   ├── dashboard/
+│   │   ├── StatCard.tsx
+│   │   ├── StaffLoadBar.tsx
+│   │   └── TodaySchedule.tsx
+│   ├── appointments/
+│   │   ├── AppointmentCard.tsx
+│   │   ├── AppointmentList.tsx
+│   │   └── CalendarView.tsx
+│   └── queue/
+│       ├── QueueCard.tsx
+│       └── QueueList.tsx
+├── lib/
+│   ├── db.ts                         # Prisma client
+│   ├── auth.ts                       # NextAuth config
+│   ├── validations/
+│   │   ├── staff.ts
+│   │   ├── service.ts
+│   │   └── appointment.ts
+│   └── utils.ts
+├── actions/
+│   ├── staff.ts
+│   ├── services.ts
+│   ├── appointments.ts
+│   ├── queue.ts
+│   └── activity.ts
+├── hooks/
+│   ├── useStaff.ts
+│   ├── useAppointments.ts
+│   └── useQueueStream.ts
+├── types/
+│   └── index.ts
+├── prisma/
+│   ├── schema.prisma
+│   └── seed.ts
+├── public/
+│   └── images/
+├── .env.example
+├── .env.local
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+└── README.md
+
+================================================================================
+                         IMPLEMENTATION STEPS
+================================================================================
+
+PHASE 1: PROJECT SETUP (Day 1)
+--------------------------------------------------------------------------------
+[ ] 1. Initialize Next.js 15 project with TypeScript
+[ ] 2. Install dependencies (Tailwind, Prisma, NextAuth, shadcn/ui, etc.)
+[ ] 3. Configure Tailwind with dark theme and custom colors
+[ ] 4. Set up Prisma with PostgreSQL connection
+[ ] 5. Create database schema and run migrations
+[ ] 6. Seed demo user data
+
+PHASE 2: AUTHENTICATION (Day 2)
+--------------------------------------------------------------------------------
+[ ] 7. Configure NextAuth.js v5 with credentials provider
+[ ] 8. Create login page with form and demo button
+[ ] 9. Create registration page with validation
+[ ] 10. Set up protected route middleware
+[ ] 11. Implement session management
+
+PHASE 3: UI COMPONENTS (Day 3)
+--------------------------------------------------------------------------------
+[ ] 12. Install and configure shadcn/ui
+[ ] 13. Create glass card component with custom styling
+[ ] 14. Build layout components (MainLayout, Sidebar, Header)
+[ ] 15. Create form components (Input, Select, DatePicker)
+[ ] 16. Build feedback components (Toast, Alert, Loading)
+
+PHASE 4: STAFF & SERVICES (Day 4)
+--------------------------------------------------------------------------------
+[ ] 17. Create staff server actions with Zod validation
+[ ] 18. Build staff management page with CRUD
+[ ] 19. Create service server actions
+[ ] 20. Build services management page
+[ ] 21. Add capacity tracking for staff
+
+PHASE 5: APPOINTMENTS (Day 5-6)
+--------------------------------------------------------------------------------
+[ ] 22. Create appointment server actions
+[ ] 23. Implement conflict detection algorithm
+[ ] 24. Build appointment form with staff selection
+[ ] 25. Add capacity warnings and conflict alerts
+[ ] 26. Create appointment list with filters
+[ ] 27. Build calendar view component
+[ ] 28. Implement status transitions
+
+PHASE 6: QUEUE MANAGEMENT (Day 7)
+--------------------------------------------------------------------------------
+[ ] 29. Create queue server actions
+[ ] 30. Set up SSE endpoint for real-time updates
+[ ] 31. Build queue display page
+[ ] 32. Implement "Assign From Queue" functionality
+[ ] 33. Add auto-assignment logic
+[ ] 34. Create position tracking
+
+PHASE 7: DASHBOARD & LOGS (Day 8)
+--------------------------------------------------------------------------------
+[ ] 35. Build dashboard page with stats
+[ ] 36. Create staff load visualization
+[ ] 37. Add today's schedule widget
+[ ] 38. Implement activity logging
+[ ] 39. Build activity log page
+
+PHASE 8: POLISH & DEPLOY (Day 9-10)
+--------------------------------------------------------------------------------
+[ ] 40. Add animations with Framer Motion
+[ ] 41. Implement responsive design
+[ ] 42. Add loading states and skeletons
+[ ] 43. Error handling and edge cases
+[ ] 44. SEO optimization (meta tags, sitemap)
+[ ] 45. Deploy to Vercel
+[ ] 46. Configure production database
+[ ] 47. Testing and bug fixes
+
+================================================================================
+                         DEPLOYMENT CHECKLIST
+================================================================================
+
+VERCEL SETUP:
+[ ] Connect GitHub repository
+[ ] Configure environment variables
+[ ] Set up PostgreSQL (Neon/Supabase)
+[ ] Configure build settings
+
+ENVIRONMENT VARIABLES:
+DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="random-secret-key"
+NEXTAUTH_URL="https://your-domain.vercel.app"
+
+POST-DEPLOYMENT:
+[ ] Run database migrations
+[ ] Seed demo user
+[ ] Verify all features
+[ ] Test real-time updates
+[ ] Check SEO (robots.txt, sitemap)
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
